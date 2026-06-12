@@ -37,16 +37,13 @@ Student management
  * @param  newStudent: student to add
  */
 void addStudent(const Student& newStudent) {
-    auto it = binarySearch(studentsList, newStudent.id,
-                           [](const Student& student, const std::string& id) {
-                               return student.id < id;
-                           });
+    auto studentIndex = findStudent(newStudent.id);
 
-    if (it != studentsList.end() && it->id == newStudent.id) {
+    if (studentIndex.has_value()) {
         return;
     }
 
-    studentsList.insert(it - studentsList.begin(), newStudent);
+    studentsList.insert(studentIndex.value(), newStudent);
 }
 
 /**

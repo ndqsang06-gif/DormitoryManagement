@@ -17,7 +17,10 @@ Find room
  * @return index of room in roomsList if found, std::nullopt otherwise
  */
 std::optional<size_t> findRoom(const std::string& roomId) {
-    auto it = binarySearch(roomsList, roomId);
+    auto it = binarySearch(roomsList, roomId, 
+                           [](const Room& room, const std::string& id) { 
+                               return room.id < id; 
+                           });
 
     if (it != roomsList.end() && it->id == roomId) {
         return it - roomsList.begin();
