@@ -20,13 +20,13 @@ FetchContent_Declare(ftxui
 FetchContent_MakeAvailable(ftxui)
 
 add_executable(dormitory
-        main.cpp
         src/config.hpp
         src/contract.hpp
         src/fileIO.hpp
         src/invoice.hpp
         src/room.hpp
         src/student.hpp
+        src/report.hpp
 )
 
 target_link_libraries(dormitory PRIVATE ftxui::screen ftxui::dom ftxui::component)
