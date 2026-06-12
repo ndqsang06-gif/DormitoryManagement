@@ -33,6 +33,7 @@ std::string generateContractId() {
     }
     newId += std::to_string(maxIdx + 1);
 
+    newid += "u";
     return newId;
 }
 
