@@ -53,6 +53,16 @@ struct ServiceInvoice {
     bool        isPaid;
 };
 
+struct OccupancyReport {
+    int    totalRooms;        // Tổng số phòng
+    int    occupiedRooms;     // Số phòng đang có người ở
+    double roomOccupancyRate; // Tỷ lệ lấp đầy theo phòng (%)
+
+    int    totalBeds;         // Tổng số giường (sức chứa tối đa)
+    int    occupiedBeds;      // Số giường đang được sử dụng
+    double bedOccupancyRate;  // Tỷ lệ lấp đầy theo giường (%)
+};
+
 /*
 ────────────────────────────────────────────────────────────────────────────────
 Data lists
