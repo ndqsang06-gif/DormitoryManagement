@@ -1,6 +1,7 @@
 #pragma once
 
 #include "config.hpp"
+#include "libs/date.hpp"
 #include "libs/vector.hpp"
 #include <fstream>
 #include <sstream>
@@ -89,7 +90,7 @@ void loadRooms() {
         Room room;
 
         room.id    = record[0];
-        room.type  = std::stoi(record[1]);
+        room.type  = std::stoll(record[1]);
         room.price = std::stod(record[2]);
 
         std::stringstream ss(record[3]);
@@ -147,8 +148,8 @@ void loadContracts() {
         contract.id        = record[0];
         contract.studentId = record[1];
         contract.roomId    = record[2];
-        contract.startDate = record[3];
-        contract.endDate   = record[4];
+        contract.startDate = base::Date(record[3]);
+        contract.endDate   = base::Date(record[4]);
         contract.isActive  = (record[5] == "true");
 
         contractsList.push_back(contract);
@@ -195,9 +196,9 @@ void loadServiceInvoices() {
         ServiceInvoice invoice;
 
         invoice.id                  = record[0];
-        invoice.roomID              = record[1];
-        invoice.month               = std::stoi(record[2]);
-        invoice.year                = std::stoi(record[3]);
+        invoice.roomId              = record[1];
+        invoice.month               = std::stoll(record[2]);
+        invoice.year                = std::stoll(record[3]);
         invoice.oldElectricityIndex = std::stod(record[4]);
         invoice.newElectricityIndex = std::stod(record[5]);
         invoice.oldWaterIndex       = std::stod(record[6]);
@@ -223,7 +224,7 @@ void saveServiceInvoices() {
         }
 
         fout << invoice.id << "," 
-             << invoice.roomID << ","
+             << invoice.roomId << ","
              << invoice.month << ","
              << invoice.year << "," 
              << invoice.oldElectricityIndex << ","

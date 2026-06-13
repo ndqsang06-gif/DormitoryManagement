@@ -2,7 +2,6 @@
 
 #include "config.hpp"
 #include "libs/algorithms.hpp"
-#include "libs/vector.hpp"
 #include <optional>
 
 /*

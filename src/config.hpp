@@ -1,5 +1,6 @@
 #pragma once
 
+#include "libs/date.hpp"
 #include "libs/vector.hpp"
 #include <string>
 #include <string_view>
@@ -20,31 +21,29 @@ struct Student {
 
 struct Room {
     std::string               id;
-    int                       type;
-    int                       price;
+    size_t                    type;
+    double                    price;
     base::Vector<std::string> students;
 
-    bool hasAvailableSlot() const {
-        return static_cast<int>(students.size()) < type;
-    }
+    constexpr bool hasAvailableSlot() const { return students.size() < type; }
 
-    size_t currentStudents() const { return students.size(); }
+    constexpr size_t currentStudents() const { return students.size(); }
 };
 
 struct Contract {
     std::string id;
     std::string studentId;
     std::string roomId;
-    std::string startDate;
-    std::string endDate;
+    base::Date  startDate;
+    base::Date  endDate;
     bool        isActive;
 };
 
 struct ServiceInvoice {
     std::string id;
-    std::string roomID;
-    int         month;
-    int         year;
+    std::string roomId;
+    size_t      month;
+    size_t      year;
     double      oldElectricityIndex;
     double      newElectricityIndex;
     double      oldWaterIndex;

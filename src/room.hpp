@@ -2,8 +2,6 @@
 
 #include "config.hpp"
 #include "libs/algorithms.hpp"
-#include "libs/vector.hpp"
-#include <new>
 #include <optional>
 
 /*
@@ -58,12 +56,15 @@ Room management
  * @param  roomType : type of the room to add
  * @param  roomPrice: price of the room to add
  */
-void addRoom(const std::string& roomId, int roomType, int roomPrice) {
+void addRoom(const std::string& roomId, size_t roomType, double roomPrice) {
     auto roomIndex = findRoom(roomId);
     if (roomIndex.has_value()) {
         return;
     }
     if (roomType != 4 && roomType != 6 && roomType != 8) {
+        return;
+    }
+    if (roomPrice <= 0) {
         return;
     }
 
@@ -98,7 +99,7 @@ void removeRoom(const std::string& roomId) {
  * @param  newType : new type of the room
  * @param  newPrice: new price of the room
  */
-void updateRoom(const std::string& roomId, int newType, int newPrice) {
+void updateRoom(const std::string& roomId, size_t newType, double newPrice) {
     auto roomIndex = findRoom(roomId);
 
     if (!roomIndex.has_value()) {
@@ -108,6 +109,9 @@ void updateRoom(const std::string& roomId, int newType, int newPrice) {
         return;
     }
     if (roomsList[roomIndex.value()].currentStudents() > newType) {
+        return;
+    }
+    if (newPrice <= 0) {
         return;
     }
 

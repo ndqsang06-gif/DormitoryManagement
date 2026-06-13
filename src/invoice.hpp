@@ -2,7 +2,6 @@
 
 #include "config.hpp"
 #include "libs/algorithms.hpp"
-#include "libs/vector.hpp"
 #include <optional>
 #include <string>
 
@@ -17,9 +16,7 @@ Generate id
  */
 std::string generateInvoiceId() {
     size_t maxIdx = 0;
-    if (serviceInvoicesList.empty()) {
-        maxIdx = 1;
-    } else {
+    if (!serviceInvoicesList.empty()) {
         auto lastInvoice = serviceInvoicesList.back();
         maxIdx           = std::stoull(lastInvoice.id.substr(2));
     }
@@ -119,10 +116,10 @@ std::optional<size_t> findInvoice(const std::string& invoiceId) {
  * @return index of invoice in serviceInvoicesList if found, std::nullopt
  * otherwise
  */
-std::optional<size_t> findInvoice(const std::string& roomId, int& month,
-                                  int& year) {
+std::optional<size_t> findInvoice(const std::string& roomId, size_t& month,
+                                  size_t& year) {
     for (auto& invoice : serviceInvoicesList) {
-        if (invoice.roomID == roomId && invoice.month == month &&
+        if (invoice.roomId == roomId && invoice.month == month &&
             invoice.year == year) {
             return &invoice - serviceInvoicesList.begin();
         }
@@ -131,10 +128,10 @@ std::optional<size_t> findInvoice(const std::string& roomId, int& month,
 }
 
 std::optional<size_t> findLastInvoice(const std::string& roomId) {
-    for (auto it = serviceInvoicesList.end() - 1;
+    for (auto it = serviceInvoicesList.end();
          it != serviceInvoicesList.begin(); it--) {
-        if (it->roomID == roomId) {
-            return it - serviceInvoicesList.begin();
+        if ((it - 1)->roomId == roomId) {
+            return (it - 1) - serviceInvoicesList.begin();
         }
     }
     return std::nullopt;
@@ -154,7 +151,7 @@ Service invoice management
  * @param  newElectricityIndex : new electricity index
  * @param  newWaterIndex       : new water index
  */
-void createInvoice(const std::string& roomId, int month, int year,
+void createInvoice(const std::string& roomId, size_t month, size_t year,
                    double newElectricityIndex, double newWaterIndex) {
     if (findInvoice(roomId, month, year).has_value()) {
         return;
@@ -163,7 +160,7 @@ void createInvoice(const std::string& roomId, int month, int year,
     ServiceInvoice newInvoice;
 
     newInvoice.id     = generateInvoiceId();
-    newInvoice.roomID = roomId;
+    newInvoice.roomId = roomId;
     newInvoice.month  = month;
     newInvoice.year   = year;
 

@@ -2,7 +2,6 @@
 
 #include "config.hpp"
 #include "libs/algorithms.hpp"
-#include "libs/vector.hpp"
 #include "room.hpp"
 #include <optional>
 #include <string>
@@ -14,9 +13,7 @@ Generate contract ID
 */
 std::string generateContractId() {
     size_t maxIdx = 0;
-    if (contractsList.empty()) {
-        maxIdx = 1;
-    } else {
+    if (!contractsList.empty()) {
         auto lastContract = contractsList.back();
         maxIdx            = std::stoull(lastContract.id.substr(2));
     }
@@ -87,11 +84,14 @@ Contract management
  * @param  endDate      : end date of the contract
  */
 void addContract(const std::string& studentId, const std::string& roomId,
-                 const std::string& startDate, const std::string& endDate) {
+                 const base::Date& startDate, const base::Date& endDate) {
     if (findActiveContractOfStudent(studentId).has_value()) {
         return;
     }
     if (!findRoom(roomId).has_value()) {
+        return;
+    }
+    if (startDate >= endDate) {
         return;
     }
 
@@ -130,13 +130,16 @@ void removeContract(const std::string& contractId) {
  * @param  newEndDate: new end date of the contract
  */
 void extendContract(const std::string& contractId,
-                    const std::string& newEndDate) {
+                    const base::Date&  newEndDate) {
     auto contractIndex = findContract(contractId);
 
     if (!contractIndex.has_value()) {
         return;
     }
     if (contractsList[contractIndex.value()].isActive == false) {
+        return;
+    }
+    if (contractsList[contractIndex.value()].endDate >= newEndDate) {
         return;
     }
 
@@ -173,7 +176,7 @@ Room assignment management
  * @param  endDate      : end date of the assignment
  */
 void registerRoom(const std::string& studentId, const std::string& roomId,
-                  const std::string& startDate, const std::string& endDate) {
+                  const base::Date& startDate, const base::Date& endDate) {
     if (findActiveContractOfStudent(studentId).has_value()) {
         return;
     }
@@ -183,6 +186,10 @@ void registerRoom(const std::string& studentId, const std::string& roomId,
         return;
     }
     if (roomsList[roomIndex.value()].hasAvailableSlot() == false) {
+        return;
+    }
+
+    if(startDate >= endDate){
         return;
     }
 
@@ -198,8 +205,8 @@ void registerRoom(const std::string& studentId, const std::string& roomId,
  * @param  newEndDate   : end date of the new contract
  */
 void transferRoom(const std::string& studentId, const std::string& newRoomId,
-                  const std::string& newStartDate,
-                  const std::string& newEndDate) {
+                  const base::Date& newStartDate,
+                  const base::Date& newEndDate) {
 
     auto oldContractIndex = findActiveContractOfStudent(studentId);
     if (!oldContractIndex.has_value()) {
@@ -214,6 +221,10 @@ void transferRoom(const std::string& studentId, const std::string& newRoomId,
         return;
     }
     if (roomsList[newRoomIndex.value()].hasAvailableSlot() == false) {
+        return;
+    }
+
+    if(newStartDate >= newEndDate){
         return;
     }
 
