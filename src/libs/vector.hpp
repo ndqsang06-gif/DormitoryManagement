@@ -62,7 +62,7 @@ template <class Type> class Vector {
             _size = other.size();
             _cap  = other.capacity();
 
-            _data = alloc_traits::allocate(_alloc, _data, _cap);
+            _data = alloc_traits::allocate(_alloc,_cap);
             for (size_t i = 0; i < _size; i++) {
                 alloc_traits::construct(_alloc, _data + i, other[i]);
             }

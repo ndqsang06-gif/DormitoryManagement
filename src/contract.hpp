@@ -3,7 +3,6 @@
 #include "config.hpp"
 #include "libs/algorithms.hpp"
 #include "room.hpp"
-#include <optional>
 #include <string>
 
 /*
@@ -41,34 +40,29 @@ Find contract
 /**
  * @brief  find contract by contractId
  * @param  contractId: id of contract to find
- * @return index of contract in contractsList if found, std::nullopt otherwise
+ * @return lower bound of contractId in contractsList
  */
-std::optional<size_t> findContract(const std::string& contractId) {
+size_t findContract(const std::string& contractId) {
     auto it = binarySearch(contractsList, contractId,
                            [](const Contract& contract, const std::string& id) {
                                return contract.id < id;
                            });
 
-    if (it != contractsList.end() && it->id == contractId) {
-        return it - contractsList.begin();
-    }
-    return std::nullopt;
+    return it - contractsList.begin();
 }
 
 /**
  * @brief  find active contract of a student
  * @param  studentId: id of student to find
- * @return index of active contract in contractsList if found, std::nullopt
- * otherwise
+ * @return index of contract if found, contractsList.size() otherwise
  */
-std::optional<size_t>
-findActiveContractOfStudent(const std::string& studentId) {
+size_t findActiveContractOfStudent(const std::string& studentId) {
     for (auto& contract : contractsList) {
         if (contract.studentId == studentId && contract.isActive == true) {
             return &contract - contractsList.begin();
         }
     }
-    return std::nullopt;
+    return contractsList.size();
 }
 
 /*
@@ -85,10 +79,13 @@ Contract management
  */
 void addContract(const std::string& studentId, const std::string& roomId,
                  const base::Date& startDate, const base::Date& endDate) {
-    if (findActiveContractOfStudent(studentId).has_value()) {
+    size_t contractIdx = findActiveContractOfStudent(studentId);
+    if (contractIdx != contractsList.size()) {
         return;
     }
-    if (!findRoom(roomId).has_value()) {
+
+    size_t roomIdx = findRoom(roomId);
+    if (roomIdx == roomsList.size() || roomsList[roomIdx].id != roomId) {
         return;
     }
     if (startDate >= endDate) {
@@ -112,16 +109,16 @@ void addContract(const std::string& studentId, const std::string& roomId,
  * @param  contractId: id of contract to remove
  */
 void removeContract(const std::string& contractId) {
-    auto contractIndex = findContract(contractId);
+    size_t idx = findContract(contractId);
 
-    if (!contractIndex.has_value()) {
+    if (idx == contractsList.size() || contractsList[idx].id != contractId) {
         return;
     }
-    if (contractsList[contractIndex.value()].isActive == true) {
+    if (contractsList[idx].isActive == true) {
         return;
     }
 
-    contractsList.erase_at(contractIndex.value());
+    contractsList.erase_at(idx);
 }
 
 /**
@@ -131,19 +128,20 @@ void removeContract(const std::string& contractId) {
  */
 void extendContract(const std::string& contractId,
                     const base::Date&  newEndDate) {
-    auto contractIndex = findContract(contractId);
+    size_t idx = findContract(contractId);
 
-    if (!contractIndex.has_value()) {
+    if (idx == contractsList.size() || contractsList[idx].id != contractId) {
         return;
     }
-    if (contractsList[contractIndex.value()].isActive == false) {
+    if (contractsList[idx].isActive == false) {
+
         return;
     }
-    if (contractsList[contractIndex.value()].endDate >= newEndDate) {
+    if (contractsList[idx].endDate >= newEndDate) {
         return;
     }
 
-    contractsList[contractIndex.value()].endDate = newEndDate;
+    contractsList[idx].endDate = newEndDate;
 }
 
 /**
@@ -151,16 +149,16 @@ void extendContract(const std::string& contractId,
  * @param  contractId: id of contract to terminate
  */
 void terminateContract(const std::string& contractId) {
-    auto contractIndex = findContract(contractId);
+    size_t idx = findContract(contractId);
 
-    if (!contractIndex.has_value()) {
+    if (idx == contractsList.size() || contractsList[idx].id != contractId) {
         return;
     }
-    if (contractsList[contractIndex.value()].isActive == false) {
+    if (contractsList[idx].isActive == false) {
         return;
     }
 
-    contractsList[contractIndex.value()].isActive = false;
+    contractsList[idx].isActive = false;
 }
 
 /*
@@ -177,19 +175,20 @@ Room assignment management
  */
 void registerRoom(const std::string& studentId, const std::string& roomId,
                   const base::Date& startDate, const base::Date& endDate) {
-    if (findActiveContractOfStudent(studentId).has_value()) {
+    size_t contractIdx = findActiveContractOfStudent(studentId);
+    if (contractIdx != contractsList.size()) {
         return;
     }
 
-    auto roomIndex = findRoom(roomId);
-    if (!roomIndex.has_value()) {
+    size_t roomIdx = findRoom(roomId);
+    if (roomIdx == roomsList.size() || roomsList[roomIdx].id != roomId) {
         return;
     }
-    if (roomsList[roomIndex.value()].hasAvailableSlot() == false) {
+    if (roomsList[roomIdx].hasAvailableSlot() == false) {
         return;
     }
 
-    if(startDate >= endDate){
+    if (startDate >= endDate) {
         return;
     }
 
@@ -208,28 +207,32 @@ void transferRoom(const std::string& studentId, const std::string& newRoomId,
                   const base::Date& newStartDate,
                   const base::Date& newEndDate) {
 
-    auto oldContractIndex = findActiveContractOfStudent(studentId);
-    if (!oldContractIndex.has_value()) {
+    size_t oldContractIdx = findActiveContractOfStudent(studentId);
+    if (oldContractIdx == contractsList.size()) {
         return;
     }
-    if (contractsList[oldContractIndex.value()].isActive == false) {
+    std::string oldRoomId     = contractsList[oldContractIdx].roomId;
+    std::string oldContractId = contractsList[oldContractIdx].id;
+
+    if (oldRoomId == newRoomId) {
+        return;
+    }
+    if (contractsList[oldContractIdx].isActive == false) {
         return;
     }
 
-    auto newRoomIndex = findRoom(newRoomId);
-    if (!newRoomIndex.has_value()) {
+    size_t newRoomIdx = findRoom(newRoomId);
+    if (newRoomIdx == roomsList.size() ||
+        roomsList[newRoomIdx].id != newRoomId) {
         return;
     }
-    if (roomsList[newRoomIndex.value()].hasAvailableSlot() == false) {
-        return;
-    }
-
-    if(newStartDate >= newEndDate){
+    if (roomsList[newRoomIdx].hasAvailableSlot() == false) {
         return;
     }
 
-    std::string oldRoomId     = contractsList[oldContractIndex.value()].roomId;
-    std::string oldContractId = contractsList[oldContractIndex.value()].id;
+    if (newStartDate >= newEndDate) {
+        return;
+    }
 
     removeStudentFromRoom(oldRoomId, studentId);
     terminateContract(oldContractId);
@@ -241,17 +244,17 @@ void transferRoom(const std::string& studentId, const std::string& newRoomId,
  * @param  studentId: id of student to checkout
  */
 void checkoutRoom(const std::string& studentId) {
-    auto contractIndex = findActiveContractOfStudent(studentId);
+    size_t idx = findActiveContractOfStudent(studentId);
 
-    if (!contractIndex.has_value()) {
+    if (idx == contractsList.size()) {
         return;
     }
-    if (contractsList[contractIndex.value()].isActive == false) {
+    if (contractsList[idx].isActive == false) {
         return;
     }
 
-    std::string contractId = contractsList[contractIndex.value()].id;
-    std::string roomId     = contractsList[contractIndex.value()].roomId;
+    std::string contractId = contractsList[idx].id;
+    std::string roomId     = contractsList[idx].roomId;
 
     removeStudentFromRoom(roomId, studentId);
     terminateContract(contractId);

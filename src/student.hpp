@@ -2,7 +2,6 @@
 
 #include "config.hpp"
 #include "libs/algorithms.hpp"
-#include <optional>
 
 /*
 ────────────────────────────────────────────────────────────────────────────────
@@ -12,18 +11,15 @@ Find student
 /**
  * @brief  find student by studentId
  * @param  studentId: id of student to find
- * @return index of student in studentsList if found, std::nullopt otherwise
+ * @return lower bound index of student in studentsList
  */
-std::optional<size_t> findStudent(const std::string& studentId) {
+size_t findStudent(const std::string& studentId) {
     auto it = binarySearch(studentsList, studentId,
                            [](const Student& student, const std::string& id) {
                                return student.id < id;
                            });
 
-    if (it != studentsList.end() && it->id == studentId) {
-        return it - studentsList.begin();
-    }
-    return std::nullopt;
+    return it - studentsList.begin();
 }
 
 /*
@@ -36,16 +32,13 @@ Student management
  * @param  newStudent: student to add
  */
 void addStudent(const Student& newStudent) {
-    auto it = binarySearch(studentsList, newStudent.id,
-                           [](const Student& student, const std::string& id) {
-                               return student.id < id;
-                           });
+    auto idx = findStudent(newStudent.id);
 
-    if (it != studentsList.end() && it->id == newStudent.id) {
+    if (idx != studentsList.size() && studentsList[idx].id == newStudent.id) {
         return;
     }
 
-    studentsList.insert(it - studentsList.begin(), newStudent);
+    studentsList.insert(idx, newStudent);
 }
 
 /**
@@ -53,13 +46,13 @@ void addStudent(const Student& newStudent) {
  * @param  studentId: id of student to remove
  */
 void removeStudent(const std::string& studentId) {
-    auto studentIndex = findStudent(studentId);
+    size_t idx = findStudent(studentId);
 
-    if (!studentIndex.has_value()) {
+    if (idx == studentsList.size() || studentsList[idx].id != studentId) {
         return;
     }
 
-    studentsList.erase_at(studentIndex.value());
+    studentsList.erase_at(idx);
 }
 
 /**
@@ -73,13 +66,13 @@ void removeStudent(const std::string& studentId) {
 void updateStudent(const std::string& studentId, std::string newClass,
                    bool newIsPriority, std::string newPhone,
                    std::string newEmail) {
-    auto studentIndex = findStudent(studentId);
+    size_t idx = findStudent(studentId);
 
-    if (!studentIndex.has_value()) {
+    if (idx == studentsList.size() || studentsList[idx].id != studentId) {
         return;
     }
 
-    Student& student     = studentsList[studentIndex.value()];
+    Student& student     = studentsList[idx];
     student.studentClass = newClass;
     student.isPriority   = newIsPriority;
     student.phone        = newPhone;

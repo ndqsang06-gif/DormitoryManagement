@@ -6,13 +6,14 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <iostream>
 
 /*
 ─────────────────────────────────────────────────────────────────────────────
 Convert file line into record
 ─────────────────────────────────────────────────────────────────────────────
 */
-base::Vector<std::string> parseRecord(const std::string& line) {
+base::Vector<std::string> parseRecord(std::string& line) {
     std::stringstream ss(line);
     std::string       token;
 
@@ -64,8 +65,8 @@ void saveStudents() {
         }
 
         fout << student.id << "," 
-             << student.name << "," 
-             << student.studentClass << "," 
+             << student.name << ","
+             << student.studentClass << ","
              << (student.isPriority ? "true" : "false") << ","
              << student.phone << "," 
              << student.email;
@@ -86,6 +87,9 @@ void loadRooms() {
     std::string line;
     while (std::getline(fin, line)) {
         base::Vector<std::string> record = parseRecord(line);
+        if(record[3] == "empty"){
+            record[3] = "";
+        }
 
         Room room;
 
@@ -116,13 +120,18 @@ void saveRooms() {
             fout << "\n";
         }
 
-        fout << room.id << ","
-             << room.type << ","
+        fout << room.id << "," 
+             << room.type << "," 
              << room.price << ",";
-        for (size_t i = 0; i < room.students.size(); ++i) {
-            fout << room.students[i];
-            if (i < room.students.size() - 1) {
-                fout << "|";
+        if(room.students.empty()){
+            fout << "empty";
+        }
+        else{
+            for (size_t i = 0; i < room.students.size(); ++i) {
+                fout << room.students[i];
+                if (i < room.students.size() - 1) {
+                    fout << "|";
+                }
             }
         }
     }
@@ -151,6 +160,7 @@ void loadContracts() {
         contract.startDate = base::Date(record[3]);
         contract.endDate   = base::Date(record[4]);
         contract.isActive  = (record[5] == "true");
+        std::cout << contract.isActive << "\n";
 
         contractsList.push_back(contract);
     }
@@ -171,7 +181,7 @@ void saveContracts() {
 
         fout << contract.id << ","
              << contract.studentId << ","
-             << contract.roomId << ","
+             << contract.roomId << "," 
              << contract.startDate << ","
              << contract.endDate << ","
              << (contract.isActive ? "true" : "false");
@@ -223,15 +233,15 @@ void saveServiceInvoices() {
             fout << "\n";
         }
 
-        fout << invoice.id << "," 
-             << invoice.roomId << ","
-             << invoice.month << ","
+        fout << invoice.id << ","
+             << invoice.roomId << "," 
+             << invoice.month << "," 
              << invoice.year << "," 
              << invoice.oldElectricityIndex << ","
              << invoice.newElectricityIndex << "," 
-             << invoice.oldWaterIndex << ","
+             << invoice.oldWaterIndex << "," 
              << invoice.newWaterIndex << "," 
-             << invoice.totalAmount << ","
+             << invoice.totalAmount << "," 
              << (invoice.isPaid ? "true" : "false");
     }
 
