@@ -1,17 +1,19 @@
 #pragma once
 
 #include "config.hpp"
+#include "libs/date.hpp"
 #include "libs/vector.hpp"
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <iostream>
 
 /*
 ─────────────────────────────────────────────────────────────────────────────
 Convert file line into record
 ─────────────────────────────────────────────────────────────────────────────
 */
-base::Vector<std::string> parseRecord(const std::string& line) {
+base::Vector<std::string> parseRecord(std::string& line) {
     std::stringstream ss(line);
     std::string       token;
 
@@ -63,8 +65,8 @@ void saveStudents() {
         }
 
         fout << student.id << "," 
-             << student.name << "," 
-             << student.studentClass << "," 
+             << student.name << ","
+             << student.studentClass << ","
              << (student.isPriority ? "true" : "false") << ","
              << student.phone << "," 
              << student.email;
@@ -85,11 +87,14 @@ void loadRooms() {
     std::string line;
     while (std::getline(fin, line)) {
         base::Vector<std::string> record = parseRecord(line);
+        if(record[3] == "empty"){
+            record[3] = "";
+        }
 
         Room room;
 
         room.id    = record[0];
-        room.type  = std::stoi(record[1]);
+        room.type  = std::stoll(record[1]);
         room.price = std::stod(record[2]);
 
         std::stringstream ss(record[3]);
@@ -115,13 +120,18 @@ void saveRooms() {
             fout << "\n";
         }
 
-        fout << room.id << ","
-             << room.type << ","
+        fout << room.id << "," 
+             << room.type << "," 
              << room.price << ",";
-        for (size_t i = 0; i < room.students.size(); ++i) {
-            fout << room.students[i];
-            if (i < room.students.size() - 1) {
-                fout << "|";
+        if(room.students.empty()){
+            fout << "empty";
+        }
+        else{
+            for (size_t i = 0; i < room.students.size(); ++i) {
+                fout << room.students[i];
+                if (i < room.students.size() - 1) {
+                    fout << "|";
+                }
             }
         }
     }
@@ -147,9 +157,10 @@ void loadContracts() {
         contract.id        = record[0];
         contract.studentId = record[1];
         contract.roomId    = record[2];
-        contract.startDate = record[3];
-        contract.endDate   = record[4];
+        contract.startDate = base::Date(record[3]);
+        contract.endDate   = base::Date(record[4]);
         contract.isActive  = (record[5] == "true");
+        std::cout << contract.isActive << "\n";
 
         contractsList.push_back(contract);
     }
@@ -170,7 +181,7 @@ void saveContracts() {
 
         fout << contract.id << ","
              << contract.studentId << ","
-             << contract.roomId << ","
+             << contract.roomId << "," 
              << contract.startDate << ","
              << contract.endDate << ","
              << (contract.isActive ? "true" : "false");
@@ -195,9 +206,9 @@ void loadServiceInvoices() {
         ServiceInvoice invoice;
 
         invoice.id                  = record[0];
-        invoice.roomID              = record[1];
-        invoice.month               = std::stoi(record[2]);
-        invoice.year                = std::stoi(record[3]);
+        invoice.roomId              = record[1];
+        invoice.month               = std::stoll(record[2]);
+        invoice.year                = std::stoll(record[3]);
         invoice.oldElectricityIndex = std::stod(record[4]);
         invoice.newElectricityIndex = std::stod(record[5]);
         invoice.oldWaterIndex       = std::stod(record[6]);
@@ -222,15 +233,15 @@ void saveServiceInvoices() {
             fout << "\n";
         }
 
-        fout << invoice.id << "," 
-             << invoice.roomID << ","
-             << invoice.month << ","
+        fout << invoice.id << ","
+             << invoice.roomId << "," 
+             << invoice.month << "," 
              << invoice.year << "," 
              << invoice.oldElectricityIndex << ","
              << invoice.newElectricityIndex << "," 
-             << invoice.oldWaterIndex << ","
+             << invoice.oldWaterIndex << "," 
              << invoice.newWaterIndex << "," 
-             << invoice.totalAmount << ","
+             << invoice.totalAmount << "," 
              << (invoice.isPaid ? "true" : "false");
     }
 
